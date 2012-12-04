@@ -45,18 +45,15 @@ void WebPage::setCustomNetworkAccessManager() {
   NetworkAccessManager *manager = new NetworkAccessManager(this);
   manager->setCookieJar(m_manager->cookieJar());
   this->setNetworkAccessManager(manager);
-  connect(manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(networkAccessManagerFinishedReply(QNetworkReply *)));
   connect(manager, SIGNAL(sslErrors(QNetworkReply *, QList<QSslError>)),
           this, SLOT(handleSslErrorsForReply(QNetworkReply *, QList<QSslError>)));
-  connect(manager, SIGNAL(requestCreated(QByteArray &, QNetworkReply *)), this, SLOT(networkAccessManagerCreatedRequest(QByteArray &, QNetworkReply *)));
+  connect(manager, SIGNAL(requestCreated(QByteArray &, QNetworkReply *)),
+          SIGNAL(requestCreated(QByteArray &, QNetworkReply *)));
 }
 
-void WebPage::networkAccessManagerCreatedRequest(QByteArray &url, QNetworkReply *reply) {
-  emit requestCreated(url, reply);
-}
-
-void WebPage::networkAccessManagerFinishedReply(QNetworkReply *reply) {
-  emit replyFinished(reply);
+void WebPage::unsupportedContentFinishedReply(QNetworkReply *reply) {
+  m_unsupportedContentLoaded = true;
+  m_manager->replyFinished(reply);
 }
 
 void WebPage::loadJavascript() {
@@ -270,6 +267,10 @@ void WebPage::handleUnsupportedContent(QNetworkReply *reply) {
     else
       handler->waitForReplyToFinish();
   }
+}
+
+bool WebPage::unsupportedContentLoaded() {
+  return m_unsupportedContentLoaded;
 }
 
 bool WebPage::supportsExtension(Extension extension) const {
