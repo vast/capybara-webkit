@@ -15,25 +15,31 @@ module Capybara::Webkit
       @app = app
       @options = options
       @browser = options[:browser] || Browser.new(Connection.new(options))
+      apply_options
     end
 
     def enable_logging
+      deprecate_and_replace_with_config "enable_logging", "debug = true"
       browser.enable_logging
     end
 
     def allow_url(url)
+      deprecate_and_replace_with_config "allow_url", "allow_url(#{url.inspect})"
       browser.allow_url(url)
     end
 
     def block_url(url)
+      deprecate_and_replace_with_config "block_url", "block_url(#{url.inspect})"
       browser.block_url(url)
     end
 
     def block_unknown_urls
+      deprecate_and_replace_with_config "block_unknown_urls"
       browser.block_unknown_urls
     end
 
     def allow_unknown_urls
+      deprecate_and_replace_with_config "allow_unknown_urls"
       browser.allow_url("*")
     end
 
@@ -253,6 +259,7 @@ module Capybara::Webkit
 
     def reset!
       browser.reset!
+      apply_options
     end
 
     def has_shortcircuit_timeout?
@@ -306,6 +313,29 @@ module Capybara::Webkit
     rescue Timeout::Error
       raise Capybara::ModalNotFound,
         "Timed out waiting for modal dialog#{" with #{options[:original_text]}" if options[:original_text]}"
+    end
+
+    def apply_options
+      if @options[:debug]
+        browser.enable_logging
+      end
+
+      if @options[:block_unknown_urls]
+        browser.block_unknown_urls
+      end
+
+      @options[:allowed_urls].each { |url| browser.allow_url(url) }
+      @options[:blocked_urls].each { |url| browser.block_url(url) }
+    end
+
+    def deprecate_and_replace_with_config(deprecated_method, config_syntax = deprecated_method)
+      warn "[DEPRECATION] #{deprecated_method} is deprecated. " \
+        "Please use Capybara::Webkit.configure instead:\n\n" \
+        "  Capybara::Webkit.configure do |config|\n" \
+        "    config.#{config_syntax}\n" \
+        "  end\n\n" \
+        "This option is global and can be configured once" \
+        " (not in a `before` or `setup` block)."
     end
   end
 end

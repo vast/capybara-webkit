@@ -2604,10 +2604,12 @@ CACHE MANIFEST
     end
 
     before do
-      driver.block_url "http://example.org/path/to/file"
-      driver.block_url "http://example.*/foo/*"
-      driver.block_url "http://example.com"
-      driver.block_url "#{AppRunner.app_host}/script"
+      configure do |config|
+        config.block_url "http://example.org/path/to/file"
+        config.block_url "http://example.*/foo/*"
+        config.block_url "http://example.com"
+        config.block_url "#{AppRunner.app_host}/script"
+      end
     end
 
     it "should not fetch urls blocked by host" do
@@ -2654,7 +2656,7 @@ CACHE MANIFEST
   describe "url whitelisting", skip_if_offline: true do
     it_behaves_like "output writer" do
       let(:driver) do
-        driver_for_html(<<-HTML, browser)
+        driver_for_html(<<-HTML, browser: browser)
           <<-HTML
             <html>
               <body>
@@ -2674,8 +2676,11 @@ CACHE MANIFEST
       end
 
       it "can allow specific hosts" do
-        driver.allow_url("example.com")
-        driver.allow_url("www.example.com")
+        configure do |config|
+          config.allow_url("example.com")
+          config.allow_url("www.example.com")
+        end
+
         visit("/")
 
         expect(stderr).not_to include("http://example.com/path")
@@ -2686,7 +2691,7 @@ CACHE MANIFEST
       end
 
       it "can allow all hosts" do
-        driver.allow_unknown_urls
+        configure(&:allow_unknown_urls)
         visit("/")
 
         expect(stderr).not_to include("http://example.com/path")
@@ -2706,7 +2711,7 @@ CACHE MANIFEST
       end
 
       it "can block unknown hosts" do
-        driver.block_unknown_urls
+        configure(&:block_unknown_urls)
         visit("/")
 
         expect(stderr).not_to include("http://example.com/path")
@@ -2717,7 +2722,7 @@ CACHE MANIFEST
       end
 
       it "can allow urls with wildcards" do
-        driver.allow_url("*/path")
+        configure { |config| config.allow_url("*/path") }
         visit("/")
 
         expect(stderr).to include("www.example.com")
@@ -2816,15 +2821,17 @@ CACHE MANIFEST
   describe "logger app" do
     it_behaves_like "output writer" do
       let(:driver) do
-        driver_for_html("<html><body>Hello</body></html>", browser)
+        driver_for_html("<html><body>Hello</body></html>", browser: browser)
       end
 
-      it "logs nothing before turning on the logger" do
+      it "logs nothing in normal mode" do
+        configure { |config| config.debug = false }
         visit("/")
         stderr.should_not include logging_message
       end
 
-      it "logs its commands after turning on the logger" do
+      it "logs its commands in debug mode" do
+        # configure { |config| config.debug = true }
         driver.enable_logging
         visit("/")
         stderr.should include logging_message
