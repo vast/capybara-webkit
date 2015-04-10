@@ -324,8 +324,8 @@ module Capybara::Webkit
         browser.block_unknown_urls
       end
 
-      @options[:allowed_urls].each { |url| browser.allow_url(url) }
-      @options[:blocked_urls].each { |url| browser.block_url(url) }
+      Array(@options[:allowed_urls]).each { |url| browser.allow_url(url) }
+      Array(@options[:blocked_urls]).each { |url| browser.block_url(url) }
     end
 
     def deprecate_and_replace_with_config(deprecated_method, config_syntax = deprecated_method)
