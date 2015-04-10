@@ -7,7 +7,7 @@ require 'base64'
 describe Capybara::Webkit::Driver do
   include AppRunner
 
-  def visit(url, driver=driver)
+  def visit(url, driver=self.driver)
     driver.visit("#{AppRunner.app_host}#{url}")
   end
 
