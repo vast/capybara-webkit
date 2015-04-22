@@ -14,6 +14,7 @@ WebPage::WebPage(WebPageManager *manager, QObject *parent) : QWebPage(parent) {
   m_failed = false;
   m_manager = manager;
   m_uuid = QUuid::createUuid().toString();
+  m_unsupportedContentLoaded = false;
 
   setForwardUnsupportedContent(true);
   loadJavascript();
@@ -255,6 +256,10 @@ int WebPage::getLastStatus() {
 
 const QList<QNetworkReply::RawHeaderPair> &WebPage::pageHeaders() {
   return qobject_cast<NetworkAccessManager *>(networkAccessManager())->headersFor(currentFrame()->url());
+}
+
+QNetworkAccessManager *WebPage::networkAccessManager() {
+  return qobject_cast<QNetworkAccessManager *>(QWebPage::networkAccessManager());
 }
 
 void WebPage::handleUnsupportedContent(QNetworkReply *reply) {

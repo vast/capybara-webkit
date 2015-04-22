@@ -33,7 +33,7 @@ class WebPage : public QWebPage {
     QString getWindowName();
     bool matchesWindowSelector(QString);
     void setFocus();
-    NetworkAccessManager *networkAccessManager();
+    QNetworkAccessManager *networkAccessManager();
     bool unsupportedContentLoaded();
     void unsupportedContentFinishedReply(QNetworkReply *reply);
 
@@ -79,6 +79,7 @@ class WebPage : public QWebPage {
     QString m_uuid;
     WebPageManager *m_manager;
     QString m_errorPageMessage;
+    bool m_unsupportedContentLoaded;
 };
 
 #endif //_WEBPAGE_H

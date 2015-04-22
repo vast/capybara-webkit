@@ -1955,7 +1955,7 @@ describe Capybara::Webkit::Driver do
     end
 
     it 'should not hang the server' do
-      visit('/')
+      driver.visit('/')
       driver.find('//input').first.click
       driver.console_messages.first[:message].should == "hello"
     end
